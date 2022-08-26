@@ -6,15 +6,14 @@ import AssemblyLine from './components/AssemblyLine';
 // The test suite ignores this file.
 const App = () => (
   <View style={styles.app}>
-    <Text style={styles.baseText}>
-      <AssemblyLine stages={['Idea', 'Development', 'Testing', 'Deployment']} />
-    </Text>
+    <AssemblyLine stages={['Idea', 'Development', 'Testing', 'Deployment']} />
   </View>
 );
 
 const styles = StyleSheet.create({
   app: {
     flex: 1,
+    alignSelf: 'stretch',
     backgroundColor: '#fff',
     padding: 15,
   },

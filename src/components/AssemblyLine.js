@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   View,
   StyleSheet,
   TextInput,
   Button,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 
 /**
@@ -18,48 +18,66 @@ const AssemblyLine = ({stages}) => {
   const [stagesBuckets, setStagesBuckets] = useState(
     [...Array(stages.length)].map(() => []),
   );
+
   const [textInput, setTextInput] = useState('');
-  // TODO add your code
 
   const addItem = () => {
     const newStageBuckets = [...stagesBuckets];
-    newStageBuckets[0] = [...newStageBuckets[0], textInput];
+    newStageBuckets[0] = [textInput, ...newStageBuckets[0]];
     setStagesBuckets(newStageBuckets);
+    setTextInput('');
   };
 
-  const moveForward = (value, index) => {
+  const moveForward = (value, stageIndex, index) => {
     const newStageBuckets = [...stagesBuckets];
-    const oldList = newStageBuckets.filter(item => item !== value);
-    const newList = [value, ...stagesBuckets[index + 1]];
-    newStageBuckets[index] = oldList;
-    newStageBuckets[index + 1] = newList;
+    newStageBuckets[stageIndex].splice(index, 1);
+
+    const nextStep = stageIndex + 1;
+    if (nextStep < stagesBuckets.length) {
+      newStageBuckets[nextStep].unshift(value);
+    }
     setStagesBuckets(newStageBuckets);
-    console.log(value, index);
   };
 
-  console.log(stagesBuckets);
+  const moveBackward = (value, stageIndex, index) => {
+    const newStageBuckets = [...stagesBuckets];
+    newStageBuckets[stageIndex].splice(index, 1);
+
+    const prevStep = stageIndex - 1;
+    if (prevStep >= 0) {
+      newStageBuckets[prevStep].push(value);
+    }
+    setStagesBuckets(newStageBuckets);
+  };
 
   return (
-    <View style={styles.bucketsContainer}>
-      <Button onPress={addItem} title="Add Item" />
-      <TextInput
-        placeholder="text"
-        onChangeText={input => setTextInput(input)}
-      />
-      {stages.map((stage, index) => (
-        <>
-          <View>
+    <View style={styles.container}>
+      <View style={styles.inputContainer}>
+        <Button onPress={addItem} title="Add Item" testID="add-new-item" />
+        <TextInput
+          placeholder="text"
+          onChangeText={input => setTextInput(input)}
+          style={styles.textInput}
+          value={textInput}
+          testID="new-item"
+        />
+      </View>
+      <View style={styles.bucketsContainer}>
+        {stages.map((stage, stageIndex) => (
+          <View style={styles.buckets} key={stage} testID="stage">
             <Text>{stage}</Text>
-            {stagesBuckets[index].map((value, index) => (
-              <TouchableOpacity
-                onPress={() => moveForward(value, index)}
-                key={value}>
+            {stagesBuckets[stageIndex].map((value, index) => (
+              <TouchableWithoutFeedback
+                onPress={() => moveForward(value, stageIndex, index)}
+                onLongPress={() => moveBackward(value, stageIndex, index)}
+                key={index}
+                testID="item">
                 <Text>{value}</Text>
-              </TouchableOpacity>
+              </TouchableWithoutFeedback>
             ))}
           </View>
-        </>
-      ))}
+        ))}
+      </View>
     </View>
   );
 };
@@ -67,12 +85,29 @@ const AssemblyLine = ({stages}) => {
 export default AssemblyLine;
 
 const styles = StyleSheet.create({
-  bucketsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 's',
-    backgroundColor: 'pink',
+  container: {
+    justifyContent: 'space-between',
     alignSelf: 'stretch',
-    horizontalPadding: 20,
+    padding: 16,
+    alignItems: 'flex-start',
+  },
+  bucketsContainer: {
+    flexDirection: 'row',
+  },
+  textInput: {
+    borderWidth: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexGrow: 1,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    marginBottom: 24,
+  },
+  buckets: {
+    flex: 1,
+    alignSelf: 'stretch',
   },
 });
